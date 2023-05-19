@@ -1,2 +1,16 @@
-# bad-tweets
-Arc Boost that removes bad tweets using AI.
+# For Me™ for Arc
+An Arc Boost that removes (dims) bad tweets using AI.
+
+I wrote this in an hour so don't get too excited, but some people asked me to share the code. I'm hoping that we can make the boost better together. Or that this will at least teach you how to create your own LLM-based boost! Contributions are very welcome.
+
+## Set up
+1. [Create a new Arc Boost](https://resources.arc.net/en/articles/6808613-boosts-customize-any-website) using the "Replace" template
+2. Swap out the template's content.js for this repo's content.js
+3. Add your own OpenAPI key
+
+## Limitations and bugs
+* The boost only dims bad tweets temporarily and e.g. the styling gets lost when the user scrolls back up
+* GPT turbo isn't always smart enough and frequently misclassifies tweets (e.g. labels any tweet about AI as 'bad')
+    * An easy solution is using GPT-4 but that could require modifications to the prompt for the best results
+* It doesn't know about a tweet's images, author, etc.
+* I haven't done the math on how expensive this would be to run constantly :)
