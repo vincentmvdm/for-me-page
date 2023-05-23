@@ -1,5 +1,5 @@
 # Remove bad tweets using Arc and AI
-An Arc Boost that removes bad tweets using AI. See the [original tweet](https://twitter.com/vincentmvdm/status/1658678049691385857).
+An Arc Boost that removes bad tweets using AI. See the [original post](https://twitter.com/vincentmvdm/status/1658678049691385857).
 
 I wrote this in an hour so don't get too excited, but some people asked me to share the code. I hope that we can make this boost better together. Or that this will at least teach you how to create your own LLM-based boost! Contributions are very welcome.
 
