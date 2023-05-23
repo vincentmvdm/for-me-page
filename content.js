@@ -39,7 +39,19 @@ function addMutationObserver() {
         .filter((tweet) => tweet !== undefined && tweet.text.length !== 0);
 
       tweets.forEach((tweet) => {
+        // We've already seen the tweet so we can skip
+        // the review process, but still have to take
+        // care of some things.
         if (seenTweets[tweet.id] !== undefined) {
+          const seenTweet = seenTweets[tweet.id];
+
+          // Update ref in case Twitter rerendered the tweet.
+          seenTweet.ref = tweet.ref;
+
+          // Make sure tweet stays removed even if Twitter rerendered it.
+          if (seenTweet.removed) {
+            removeTweet(seenTweet.id, seenTweet.topic);
+          }
           return;
         }
 
@@ -48,7 +60,10 @@ function addMutationObserver() {
       });
     });
   });
-  observer.observe(document.body, { subtree: true, childList: true });
+  observer.observe(document.body, {
+    subtree: true,
+    childList: true,
+  });
 }
 
 async function reviewTweets() {
@@ -67,7 +82,7 @@ async function reviewTweets() {
       const badTweets = await identifyBadTweets(currentReview);
       console.log("\n");
       console.log(
-        `Reviewed ${
+        `Checked ${
           currentReview.length
         } tweets at ${new Date().toLocaleString()}`
       );
@@ -119,7 +134,7 @@ Tweets to review:
 """
 ${JSON.stringify(
   currentReview.map((tweet) => {
-    const { ref, ...rest } = tweet;
+    const { ref, topic, removed, ...rest } = tweet;
     return rest;
   })
 )}
@@ -138,14 +153,55 @@ function removeTweet(id, topic) {
     return;
   }
 
-  console.log("\n");
-  console.log(`Removed tweet ${tweet.id}`);
-  console.log(`Text: ${tweet.text}`);
-  console.log(`Topic: ${topic}`);
+  // Check if this is the first time that we're removing it.
+  // If yes, we'll log it and mark it as removed.
+  if (!tweet.removed) {
+    console.log("\n");
+    console.log(`Removed tweet ${tweet.id}`);
+    console.log(`Text: ${tweet.text}`);
+    console.log(`Topic: ${topic}`);
 
-  // TODO: Make sure that Twitter doesn't reset this styling
-  // change when the user e.g. scrolls back up
-  tweet.ref.style.opacity = 0.1;
+    tweet.topic = topic;
+    tweet.removed = true;
+  }
+
+  const tweetReplacement = createTweetReplacement();
+
+  const parentNode = tweet.ref.parentNode;
+  if (!parentNode) {
+    console.log(`Error: couldn't find parent`);
+    return;
+  }
+
+  parentNode.replaceChild(tweetReplacement, tweet.ref);
+}
+
+function createTweetReplacement() {
+  const removedBanner = document.createElement("article");
+  removedBanner.innerHTML = `
+<div style="padding: 12px 16px; display: flex; flex-direction: column">
+  <div
+    style="
+      padding: 12px 16px;
+      background-color: rgb(247, 249, 249);
+      border-radius: 16px;
+      border: 1px solid rgb(239, 243, 244);
+    "
+  >
+    <span
+      style="
+        font-size: 15px;
+        font-family: TwitterChirp, -apple-system, 'system-ui', 'Segoe UI',
+          Roboto, Helvetica, Arial, sans-serif;
+        line-height: 20px;
+        color: rgb(83, 100, 113);
+      "
+      >This tweet is about a topic you dislike.</span
+    >
+  </div>
+</div>
+  `;
+  return removedBanner;
 }
 
 function extractTweet(elem) {
@@ -164,6 +220,8 @@ function extractTweet(elem) {
     text: formatTweetText(text),
     // Include a ref to the DOM element for easy manipulation.
     ref: elem,
+    topic: undefined,
+    removed: false,
   };
 }
 
