@@ -1,0 +1,7 @@
+{
+  "run": {
+    "verify": {
+      "command": "node verify-server.mjs"
+    }
+  }
+}
